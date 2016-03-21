@@ -1,0 +1,59 @@
+gift <- (command* question blank_line?)+ `
+  case Node of
+    [[[], M, []]] -> M
+  end
+`;
+
+command <- '$' (!line_break .)* line_break;
+
+question <- essay_question / true_false_question / multiple_choice_question / description;
+
+essay_question <- question_text '{' nbsp? '}' `
+  case Node of
+    [Q | _] -> #{'__struct__' => 'Elixir.Gift.EssayQuestion', text => Q}
+  end `;
+
+true_false_question <- question_text '{' space? (true_answer / false_answer) feedback? space? '}' `
+  case Node of
+    [Q, _, _, A, F, _, _] -> #{'__struct__' => 'Elixir.Gift.TrueFalseQuestion', text => Q, answer => A, feedback => F }
+  end `;
+
+multiple_choice_question <- question_text "{" space? answer_list space? "}";
+
+description <- question_text `
+  #{'__struct__' => 'Elixir.Gift.Description', text => Node} `;
+
+
+
+question_text <- (!"{" !blank_line ( escaped_symbol / .))+ `
+  lists:foldr(fun([_,_,L], Acc) -> <<L/binary, Acc/binary>> end, <<>>, Node)
+`;
+
+answer_list <- (right_answer / wrong_answer)+ `
+  answer_list
+`;
+
+true_answer <- ("TRUE" / "T") space? ` true `;
+
+false_answer <- ("FALSE" / "F") space? ` false `;
+
+wrong_answer <- "~" (![=~}#] (escaped_symbol / .))* space? feedback?;
+
+right_answer <- "=" (![=~}#] (escaped_symbol / .))* space? feedback?;
+
+feedback <- "#" (!"}" .)+ `
+  [_, F] = Node,
+  lists:foldr(fun([_,L], Acc) -> <<L/binary, Acc/binary>> end, <<>>, F)
+`;
+
+blank_line <- line_break nbsp? line_break space?;
+
+symbol <- ('=' / '{' / '}' / '#' / ':');
+
+nbsp <- (" " / "\t")+;
+
+line_break <- "\r\n" / "\n";
+
+space <- (" " / "\t" / "\r" / "\n")+;
+
+escaped_symbol <- ("\\" [={}#:]);
