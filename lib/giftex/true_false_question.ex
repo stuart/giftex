@@ -1,3 +1,3 @@
 defmodule Gift.TrueFalseQuestion do
-  defstruct text: "", answer: nil, feedback: ""
+  defstruct text: "", answer: {nil, nil}
 end

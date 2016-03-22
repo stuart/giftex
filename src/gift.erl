@@ -28,11 +28,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'gift'(input(), index()) -> parse_result().
 'gift'(Input, Index) ->
-  p(Input, Index, 'gift', fun(I,D) -> (p_one_or_more(p_seq([p_zero_or_more(fun 'command'/2), fun 'question'/2, p_optional(fun 'blank_line'/2)])))(I,D) end, fun(Node, _Idx) ->
-  case Node of
-    [[[], M, []]] -> M
-  end
- end).
+  p(Input, Index, 'gift', fun(I,D) -> (p_one_or_more(p_seq([p_zero_or_more(fun 'command'/2), fun 'question'/2, p_optional(fun 'blank_line'/2)])))(I,D) end, fun(Node, Idx) ->transform('gift', Node, Idx) end).
 
 -spec 'command'(input(), index()) -> parse_result().
 'command'(Input, Index) ->
@@ -40,73 +36,103 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'question'(input(), index()) -> parse_result().
 'question'(Input, Index) ->
-  p(Input, Index, 'question', fun(I,D) -> (p_choose([fun 'essay_question'/2, fun 'true_false_question'/2, fun 'multiple_choice_question'/2, fun 'description'/2]))(I,D) end, fun(Node, Idx) ->transform('question', Node, Idx) end).
+  p(Input, Index, 'question', fun(I,D) -> (p_choose([fun 'essay_question'/2, fun 'true_false_question'/2, fun 'matching_question'/2, fun 'short_answer_question'/2, fun 'multiple_choice_question'/2, fun 'numeric_question'/2, fun 'description'/2]))(I,D) end, fun(Node, Idx) ->transform('question', Node, Idx) end).
 
 -spec 'essay_question'(input(), index()) -> parse_result().
 'essay_question'(Input, Index) ->
-  p(Input, Index, 'essay_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), p_optional(fun 'nbsp'/2), p_string(<<"}">>)]))(I,D) end, fun(Node, _Idx) ->
-  case Node of
-    [Q | _] -> #{'__struct__' => 'Elixir.Gift.EssayQuestion', text => Q}
-  end  end).
+  p(Input, Index, 'essay_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), p_optional(fun 'nbsp'/2), p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('essay_question', Node, Idx) end).
 
 -spec 'true_false_question'(input(), index()) -> parse_result().
 'true_false_question'(Input, Index) ->
-  p(Input, Index, 'true_false_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), p_optional(fun 'space'/2), p_choose([fun 'true_answer'/2, fun 'false_answer'/2]), p_optional(fun 'feedback'/2), p_optional(fun 'space'/2), p_string(<<"}">>)]))(I,D) end, fun(Node, _Idx) ->
-  case Node of
-    [Q, _, _, A, F, _, _] -> #{'__struct__' => 'Elixir.Gift.TrueFalseQuestion', text => Q, answer => A, feedback => F }
-  end  end).
+  p(Input, Index, 'true_false_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), fun 'space'/2, p_choose([fun 'true_answer'/2, fun 'false_answer'/2]), fun 'space'/2, p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('true_false_question', Node, Idx) end).
+
+-spec 'matching_question'(input(), index()) -> parse_result().
+'matching_question'(Input, Index) ->
+  p(Input, Index, 'matching_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), fun 'space'/2, p_one_or_more(fun 'match_answer'/2), fun 'space'/2, p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('matching_question', Node, Idx) end).
+
+-spec 'short_answer_question'(input(), index()) -> parse_result().
+'short_answer_question'(Input, Index) ->
+  p(Input, Index, 'short_answer_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), fun 'space'/2, p_one_or_more(fun 'right_answer'/2), fun 'space'/2, p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('short_answer_question', Node, Idx) end).
 
 -spec 'multiple_choice_question'(input(), index()) -> parse_result().
 'multiple_choice_question'(Input, Index) ->
-  p(Input, Index, 'multiple_choice_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), p_optional(fun 'space'/2), fun 'answer_list'/2, p_optional(fun 'space'/2), p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('multiple_choice_question', Node, Idx) end).
+  p(Input, Index, 'multiple_choice_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), fun 'space'/2, p_one_or_more(p_choose([fun 'right_answer'/2, fun 'wrong_answer'/2])), fun 'space'/2, p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('multiple_choice_question', Node, Idx) end).
+
+-spec 'numeric_question'(input(), index()) -> parse_result().
+'numeric_question'(Input, Index) ->
+  p(Input, Index, 'numeric_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{#">>), fun 'space'/2, p_one_or_more(fun 'numeric_answer'/2), fun 'space'/2, p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('numeric_question', Node, Idx) end).
 
 -spec 'description'(input(), index()) -> parse_result().
 'description'(Input, Index) ->
-  p(Input, Index, 'description', fun(I,D) -> (fun 'question_text'/2)(I,D) end, fun(Node, _Idx) ->
-  #{'__struct__' => 'Elixir.Gift.Description', text => Node}  end).
+  p(Input, Index, 'description', fun(I,D) -> (fun 'question_text'/2)(I,D) end, fun(Node, Idx) ->transform('description', Node, Idx) end).
 
 -spec 'question_text'(input(), index()) -> parse_result().
 'question_text'(Input, Index) ->
-  p(Input, Index, 'question_text', fun(I,D) -> (p_one_or_more(p_seq([p_not(p_string(<<"{">>)), p_not(fun 'blank_line'/2), p_choose([fun 'escaped_symbol'/2, p_anything()])])))(I,D) end, fun(Node, _Idx) ->
-  lists:foldr(fun([_,_,L], Acc) -> <<L/binary, Acc/binary>> end, <<>>, Node)
- end).
-
--spec 'answer_list'(input(), index()) -> parse_result().
-'answer_list'(Input, Index) ->
-  p(Input, Index, 'answer_list', fun(I,D) -> (p_one_or_more(p_choose([fun 'right_answer'/2, fun 'wrong_answer'/2])))(I,D) end, fun(_Node, _Idx) ->
-  answer_list
- end).
+  p(Input, Index, 'question_text', fun(I,D) -> (p_one_or_more(p_seq([p_not(p_string(<<"{">>)), p_not(fun 'blank_line'/2), p_choose([fun 'escaped_symbol'/2, p_anything()])])))(I,D) end, fun(Node, Idx) ->transform('question_text', Node, Idx) end).
 
 -spec 'true_answer'(input(), index()) -> parse_result().
 'true_answer'(Input, Index) ->
-  p(Input, Index, 'true_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"TRUE">>), p_string(<<"T">>)]), p_optional(fun 'space'/2)]))(I,D) end, fun(_Node, _Idx) -> true  end).
+  p(Input, Index, 'true_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"TRUE">>), p_string(<<"T">>)]), fun 'space'/2, p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('true_answer', Node, Idx) end).
 
 -spec 'false_answer'(input(), index()) -> parse_result().
 'false_answer'(Input, Index) ->
-  p(Input, Index, 'false_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"FALSE">>), p_string(<<"F">>)]), p_optional(fun 'space'/2)]))(I,D) end, fun(_Node, _Idx) -> false  end).
+  p(Input, Index, 'false_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"FALSE">>), p_string(<<"F">>)]), fun 'space'/2, p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('false_answer', Node, Idx) end).
 
 -spec 'wrong_answer'(input(), index()) -> parse_result().
 'wrong_answer'(Input, Index) ->
-  p(Input, Index, 'wrong_answer', fun(I,D) -> (p_seq([p_string(<<"~">>), p_zero_or_more(p_seq([p_not(p_charclass(<<"[=~}#]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('wrong_answer', Node, Idx) end).
+  p(Input, Index, 'wrong_answer', fun(I,D) -> (p_seq([p_string(<<"~">>), p_optional(fun 'weight'/2), fun 'escaped_text'/2, p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('wrong_answer', Node, Idx) end).
 
 -spec 'right_answer'(input(), index()) -> parse_result().
 'right_answer'(Input, Index) ->
-  p(Input, Index, 'right_answer', fun(I,D) -> (p_seq([p_string(<<"=">>), p_zero_or_more(p_seq([p_not(p_charclass(<<"[=~}#]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('right_answer', Node, Idx) end).
+  p(Input, Index, 'right_answer', fun(I,D) -> (p_seq([p_string(<<"=">>), p_optional(fun 'weight'/2), fun 'escaped_text'/2, p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('right_answer', Node, Idx) end).
+
+-spec 'match_answer'(input(), index()) -> parse_result().
+'match_answer'(Input, Index) ->
+  p(Input, Index, 'match_answer', fun(I,D) -> (p_seq([p_string(<<"=">>), p_zero_or_more(p_seq([p_not(p_string(<<"->">>)), p_not(p_charclass(<<"[=}#]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), p_string(<<"->">>), p_zero_or_more(p_seq([p_not(p_charclass(<<"[=}#]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), fun 'space'/2]))(I,D) end, fun(Node, Idx) ->transform('match_answer', Node, Idx) end).
+
+-spec 'numeric_answer'(input(), index()) -> parse_result().
+'numeric_answer'(Input, Index) ->
+  p(Input, Index, 'numeric_answer', fun(I,D) -> (p_seq([p_optional(p_string(<<"=">>)), p_optional(fun 'weight'/2), p_choose([fun 'numeric_with_tolerance'/2, fun 'range'/2, fun 'number'/2]), fun 'space'/2, p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('numeric_answer', Node, Idx) end).
+
+-spec 'range'(input(), index()) -> parse_result().
+'range'(Input, Index) ->
+  p(Input, Index, 'range', fun(I,D) -> (p_seq([fun 'number'/2, p_string(<<"..">>), fun 'number'/2]))(I,D) end, fun(Node, Idx) ->transform('range', Node, Idx) end).
+
+-spec 'numeric_with_tolerance'(input(), index()) -> parse_result().
+'numeric_with_tolerance'(Input, Index) ->
+  p(Input, Index, 'numeric_with_tolerance', fun(I,D) -> (p_seq([fun 'number'/2, p_string(<<":">>), fun 'number'/2]))(I,D) end, fun(Node, Idx) ->transform('numeric_with_tolerance', Node, Idx) end).
 
 -spec 'feedback'(input(), index()) -> parse_result().
 'feedback'(Input, Index) ->
-  p(Input, Index, 'feedback', fun(I,D) -> (p_seq([p_string(<<"#">>), p_one_or_more(p_seq([p_not(p_string(<<"}">>)), p_anything()]))]))(I,D) end, fun(Node, _Idx) ->
-  [_, F] = Node,
-  lists:foldr(fun([_,L], Acc) -> <<L/binary, Acc/binary>> end, <<>>, F)
- end).
+  p(Input, Index, 'feedback', fun(I,D) -> (p_seq([p_string(<<"#">>), fun 'escaped_text'/2]))(I,D) end, fun(Node, Idx) ->transform('feedback', Node, Idx) end).
+
+-spec 'weight'(input(), index()) -> parse_result().
+'weight'(Input, Index) ->
+  p(Input, Index, 'weight', fun(I,D) -> (p_seq([p_string(<<"%">>), fun 'number'/2, p_string(<<"%">>)]))(I,D) end, fun(Node, Idx) ->transform('weight', Node, Idx) end).
+
+-spec 'number'(input(), index()) -> parse_result().
+'number'(Input, Index) ->
+  p(Input, Index, 'number', fun(I,D) -> (p_seq([fun 'int'/2, p_optional(fun 'frac'/2)]))(I,D) end, fun(Node, Idx) ->transform('number', Node, Idx) end).
+
+-spec 'int'(input(), index()) -> parse_result().
+'int'(Input, Index) ->
+  p(Input, Index, 'int', fun(I,D) -> (p_choose([p_seq([p_optional(p_string(<<"-">>)), p_seq([fun 'non_zero_digit'/2, p_one_or_more(fun 'digit'/2)])]), p_seq([p_optional(p_string(<<"-">>)), fun 'digit'/2])]))(I,D) end, fun(Node, Idx) ->transform('int', Node, Idx) end).
+
+-spec 'frac'(input(), index()) -> parse_result().
+'frac'(Input, Index) ->
+  p(Input, Index, 'frac', fun(I,D) -> (p_seq([p_string(<<".">>), p_one_or_more(fun 'digit'/2)]))(I,D) end, fun(Node, Idx) ->transform('frac', Node, Idx) end).
+
+-spec 'non_zero_digit'(input(), index()) -> parse_result().
+'non_zero_digit'(Input, Index) ->
+  p(Input, Index, 'non_zero_digit', fun(I,D) -> (p_charclass(<<"[1-9]">>))(I,D) end, fun(Node, Idx) ->transform('non_zero_digit', Node, Idx) end).
+
+-spec 'digit'(input(), index()) -> parse_result().
+'digit'(Input, Index) ->
+  p(Input, Index, 'digit', fun(I,D) -> (p_charclass(<<"[0-9]">>))(I,D) end, fun(Node, Idx) ->transform('digit', Node, Idx) end).
 
 -spec 'blank_line'(input(), index()) -> parse_result().
 'blank_line'(Input, Index) ->
-  p(Input, Index, 'blank_line', fun(I,D) -> (p_seq([fun 'line_break'/2, p_optional(fun 'nbsp'/2), fun 'line_break'/2, p_optional(fun 'space'/2)]))(I,D) end, fun(Node, Idx) ->transform('blank_line', Node, Idx) end).
-
--spec 'symbol'(input(), index()) -> parse_result().
-'symbol'(Input, Index) ->
-  p(Input, Index, 'symbol', fun(I,D) -> (p_choose([p_string(<<"=">>), p_string(<<"{">>), p_string(<<"}">>), p_string(<<"#">>), p_string(<<":">>)]))(I,D) end, fun(Node, Idx) ->transform('symbol', Node, Idx) end).
+  p(Input, Index, 'blank_line', fun(I,D) -> (p_seq([fun 'line_break'/2, p_optional(fun 'nbsp'/2), fun 'line_break'/2, fun 'space'/2]))(I,D) end, fun(Node, Idx) ->transform('blank_line', Node, Idx) end).
 
 -spec 'nbsp'(input(), index()) -> parse_result().
 'nbsp'(Input, Index) ->
@@ -114,18 +140,22 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'line_break'(input(), index()) -> parse_result().
 'line_break'(Input, Index) ->
-  p(Input, Index, 'line_break', fun(I,D) -> (p_choose([p_string(<<"\r\n">>), p_string(<<"\n">>)]))(I,D) end, fun(Node, Idx) ->transform('line_break', Node, Idx) end).
+  p(Input, Index, 'line_break', fun(I,D) -> (p_one_or_more(p_charclass(<<"[\n\r]">>)))(I,D) end, fun(Node, Idx) ->transform('line_break', Node, Idx) end).
 
 -spec 'space'(input(), index()) -> parse_result().
 'space'(Input, Index) ->
-  p(Input, Index, 'space', fun(I,D) -> (p_one_or_more(p_choose([p_string(<<"\s">>), p_string(<<"\t">>), p_string(<<"\r">>), p_string(<<"\n">>)])))(I,D) end, fun(Node, Idx) ->transform('space', Node, Idx) end).
+  p(Input, Index, 'space', fun(I,D) -> (p_zero_or_more(p_charclass(<<"[\s\t\n\s\r]">>)))(I,D) end, fun(Node, Idx) ->transform('space', Node, Idx) end).
+
+-spec 'escaped_text'(input(), index()) -> parse_result().
+'escaped_text'(Input, Index) ->
+  p(Input, Index, 'escaped_text', fun(I,D) -> (p_seq([p_one_or_more(p_seq([p_not(p_charclass(<<"[=~}#]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), fun 'space'/2]))(I,D) end, fun(Node, Idx) ->transform('escaped_text', Node, Idx) end).
 
 -spec 'escaped_symbol'(input(), index()) -> parse_result().
 'escaped_symbol'(Input, Index) ->
   p(Input, Index, 'escaped_symbol', fun(I,D) -> (p_seq([p_string(<<"\\">>), p_charclass(<<"[={}#:]">>)]))(I,D) end, fun(Node, Idx) ->transform('escaped_symbol', Node, Idx) end).
 
 
-transform(_,Node,_Index) -> Node.
+transform(Symbol,Node,Index) -> gift_transform:transform(Symbol, Node, Index).
 -file("peg_includes.hrl", 1).
 -type index() :: {{line, pos_integer()}, {column, pos_integer()}}.
 -type input() :: binary().
