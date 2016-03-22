@@ -101,4 +101,9 @@ defmodule Giftex.ParserTest do
   assert %Gift.MatchingQuestion{text: "Match the following countries with their corresponding capitals.",
                                 answers: [{"Canada", "Ottawa"}, {"Italy", "Rome"}, {"Japan", "Tokyo"}]} = p
   end
+
+  test "fill in question" do
+    p = :gift.parse "Little {~blue =red ~green } riding hood.\n"
+    assert %Gift.FillInQuestion{text: "Little _ riding hood.", answers: [{"blue", 0}, {"red", 100}, {"green", 0}]} = p
+  end
 end

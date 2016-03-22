@@ -28,9 +28,7 @@ trim_binary(Text) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 transform(gift, Node, _Index) ->
   case Node of
-    [[[],M,[]]] -> M;
-    % fixme: Deal with trailing question
-    [[[],Q1,[]],[[],Q2,[]]] -> Q1
+    [[[],M,[]] | _ ] -> M
   end;
 
 transform(question, Q, _Index) ->
@@ -47,6 +45,10 @@ transform(true_false_question, [Q, _, _, A, _, _], _Index) ->
 
 transform(matching_question, [Q, _, _, Alist, _, _], _Index) ->
     #{'__struct__' => 'Elixir.Gift.MatchingQuestion', text => Q, answers => Alist};
+
+transform(fill_in_question, [Prefix, _, _, Alist, _, _, Suffix], _Index) ->
+  S = join_text(Suffix, second),
+  #{'__struct__' => 'Elixir.Gift.FillInQuestion', text => <<Prefix/binary, " _ ", S/binary>>, answers => Alist};
 
 transform(short_answer_question, [Q, _, _, Alist, _, _], _Index) ->
   #{'__struct__' => 'Elixir.Gift.ShortAnswerQuestion', text => Q, answers => Alist};

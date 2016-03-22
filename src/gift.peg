@@ -2,7 +2,7 @@ gift <- (command* question blank_line?)+;
 
 command <- '$' (!line_break .)* line_break;
 
-question <- essay_question / true_false_question / matching_question / short_answer_question / multiple_choice_question / numeric_question / description;
+question <- essay_question / true_false_question / matching_question / fill_in_question / short_answer_question / multiple_choice_question / numeric_question / description;
 
 % QUESTION TYPES
 essay_question <- question_text '{' nbsp? '}';
@@ -10,6 +10,8 @@ essay_question <- question_text '{' nbsp? '}';
 true_false_question <- question_text '{' space (true_answer / false_answer) space '}';
 
 matching_question <- question_text "{" space (match_answer)+ space "}";
+
+fill_in_question <- question_text '{' space (wrong_answer / right_answer)+ space  '}' (![\r\n] (escaped_symbol / .))+;
 
 short_answer_question <- question_text "{" space (right_answer)+ space "}";
 

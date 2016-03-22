@@ -36,7 +36,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'question'(input(), index()) -> parse_result().
 'question'(Input, Index) ->
-  p(Input, Index, 'question', fun(I,D) -> (p_choose([fun 'essay_question'/2, fun 'true_false_question'/2, fun 'matching_question'/2, fun 'short_answer_question'/2, fun 'multiple_choice_question'/2, fun 'numeric_question'/2, fun 'description'/2]))(I,D) end, fun(Node, Idx) ->transform('question', Node, Idx) end).
+  p(Input, Index, 'question', fun(I,D) -> (p_choose([fun 'essay_question'/2, fun 'true_false_question'/2, fun 'matching_question'/2, fun 'fill_in_question'/2, fun 'short_answer_question'/2, fun 'multiple_choice_question'/2, fun 'numeric_question'/2, fun 'description'/2]))(I,D) end, fun(Node, Idx) ->transform('question', Node, Idx) end).
 
 -spec 'essay_question'(input(), index()) -> parse_result().
 'essay_question'(Input, Index) ->
@@ -49,6 +49,10 @@ parse(Input) when is_binary(Input) ->
 -spec 'matching_question'(input(), index()) -> parse_result().
 'matching_question'(Input, Index) ->
   p(Input, Index, 'matching_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), fun 'space'/2, p_one_or_more(fun 'match_answer'/2), fun 'space'/2, p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('matching_question', Node, Idx) end).
+
+-spec 'fill_in_question'(input(), index()) -> parse_result().
+'fill_in_question'(Input, Index) ->
+  p(Input, Index, 'fill_in_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{">>), fun 'space'/2, p_one_or_more(p_choose([fun 'wrong_answer'/2, fun 'right_answer'/2])), fun 'space'/2, p_string(<<"}">>), p_one_or_more(p_seq([p_not(p_charclass(<<"[\r\n]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])]))]))(I,D) end, fun(Node, Idx) ->transform('fill_in_question', Node, Idx) end).
 
 -spec 'short_answer_question'(input(), index()) -> parse_result().
 'short_answer_question'(Input, Index) ->
