@@ -1,6 +1,8 @@
 -module(gift_transform).
 -export([transform/3]).
 
+% Transformations for atoms from the GIFT parser
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Utility Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,20 +37,33 @@ add_title([], Q) ->
 add_title(Title, Q) ->
   maps:put(title, Title, Q).
 
+strip_comments(ItemList) ->
+  lists:filter(fun(Item) -> Item /= comment end, ItemList).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ROOT NODE TRANSFORM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-transform(gift, [_, Questions], _Index) when is_list(Questions) ->
+transform(gift, [_, Questions, _], _Index) when is_list(Questions) ->
   Questions;
 
-transform(single_question, [CommandList, Q, _], _Index) ->
-  CommandList ++ [Q];
+transform(item, comment, _Index) ->
+  [comment, []];
 
-transform(question_list, [QList, SingleQ], _Index) ->
-  lists:map(fun([CommandList, Q, _]) -> Q end, QList) ++ SingleQ;
+transform(item, Node, _Index) ->
+  Node;
 
-transform(decorated_question, [Comment, Title, Markup, Q, _], _Index) ->
+transform(item_list, [ItemList, [LastItem, _]], _Index) ->
+  strip_comments(
+    lists:map(fun([Q, _]) -> Q end, ItemList) ++ [LastItem]
+  );
+
+transform(item_list, [ItemList, []], _Index) ->
+  strip_comments(
+    lists:map(fun([Q, _]) -> Q end, ItemList)
+  );
+
+transform(decorated_question, [Title, Markup, Q, _], _Index) ->
   add_markup(Markup, add_title(Title, Q));
 
 transform(question, [_, Q], _Index) ->
@@ -87,7 +102,7 @@ transform(description, Node, _Index) ->
 % Commands
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-transform(command, [_, Text, _], _Index) ->
+transform(command, [_, Text], _Index) ->
   #{'__struct__' => 'Elixir.Gift.Command', command => join_text(Text, second)};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

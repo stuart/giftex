@@ -28,23 +28,23 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'gift'(input(), index()) -> parse_result().
 'gift'(Input, Index) ->
-  p(Input, Index, 'gift', fun(I,D) -> (p_seq([p_zero_or_more(fun 'space'/2), p_choose([fun 'question_list'/2, fun 'single_question'/2])]))(I,D) end, fun(Node, Idx) ->transform('gift', Node, Idx) end).
+  p(Input, Index, 'gift', fun(I,D) -> (p_seq([p_optional(fun 'space'/2), fun 'item_list'/2, p_optional(fun 'space'/2)]))(I,D) end, fun(Node, Idx) ->transform('gift', Node, Idx) end).
 
--spec 'question_list'(input(), index()) -> parse_result().
-'question_list'(Input, Index) ->
-  p(Input, Index, 'question_list', fun(I,D) -> (p_seq([p_one_or_more(p_seq([p_zero_or_more(fun 'command'/2), fun 'decorated_question'/2, fun 'blank_line'/2])), fun 'single_question'/2]))(I,D) end, fun(Node, Idx) ->transform('question_list', Node, Idx) end).
+-spec 'item_list'(input(), index()) -> parse_result().
+'item_list'(Input, Index) ->
+  p(Input, Index, 'item_list', fun(I,D) -> (p_seq([p_zero_or_more(fun 'item'/2), p_optional(p_seq([fun 'decorated_question'/2, p_zero_or_more(p_choose([fun 'blank_line'/2, fun 'space'/2]))]))]))(I,D) end, fun(Node, Idx) ->transform('item_list', Node, Idx) end).
 
--spec 'single_question'(input(), index()) -> parse_result().
-'single_question'(Input, Index) ->
-  p(Input, Index, 'single_question', fun(I,D) -> (p_seq([p_zero_or_more(fun 'command'/2), fun 'decorated_question'/2, p_optional(p_choose([fun 'blank_line'/2, fun 'space'/2]))]))(I,D) end, fun(Node, Idx) ->transform('single_question', Node, Idx) end).
+-spec 'item'(input(), index()) -> parse_result().
+'item'(Input, Index) ->
+  p(Input, Index, 'item', fun(I,D) -> (p_choose([fun 'comment'/2, p_seq([fun 'command'/2, p_optional(fun 'space'/2)]), p_seq([fun 'decorated_question'/2, fun 'blank_line'/2])]))(I,D) end, fun(Node, Idx) ->transform('item', Node, Idx) end).
 
 -spec 'command'(input(), index()) -> parse_result().
 'command'(Input, Index) ->
-  p(Input, Index, 'command', fun(I,D) -> (p_seq([p_string(<<"$">>), p_zero_or_more(p_seq([p_not(fun 'line_break'/2), p_anything()])), fun 'line_break'/2]))(I,D) end, fun(Node, Idx) ->transform('command', Node, Idx) end).
+  p(Input, Index, 'command', fun(I,D) -> (p_seq([p_string(<<"$">>), p_one_or_more(p_seq([p_not(fun 'line_break'/2), p_anything()]))]))(I,D) end, fun(Node, Idx) ->transform('command', Node, Idx) end).
 
 -spec 'decorated_question'(input(), index()) -> parse_result().
 'decorated_question'(Input, Index) ->
-  p(Input, Index, 'decorated_question', fun(I,D) -> (p_seq([p_optional(fun 'comment'/2), p_optional(fun 'title'/2), p_optional(fun 'markup'/2), fun 'question'/2, p_optional(fun 'nbsp'/2)]))(I,D) end, fun(Node, Idx) ->transform('decorated_question', Node, Idx) end).
+  p(Input, Index, 'decorated_question', fun(I,D) -> (p_seq([p_optional(fun 'title'/2), p_optional(fun 'markup'/2), fun 'question'/2, p_optional(fun 'nbsp'/2)]))(I,D) end, fun(Node, Idx) ->transform('decorated_question', Node, Idx) end).
 
 -spec 'question'(input(), index()) -> parse_result().
 'question'(Input, Index) ->
@@ -110,10 +110,6 @@ parse(Input) when is_binary(Input) ->
 'numeric_answer'(Input, Index) ->
   p(Input, Index, 'numeric_answer', fun(I,D) -> (p_seq([p_optional(p_string(<<"=">>)), p_optional(fun 'weight'/2), p_choose([fun 'numeric_with_tolerance'/2, fun 'range'/2, fun 'number'/2]), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('numeric_answer', Node, Idx) end).
 
--spec 'comment'(input(), index()) -> parse_result().
-'comment'(Input, Index) ->
-  p(Input, Index, 'comment', fun(I,D) -> (p_seq([p_string(<<"\/\/">>), p_zero_or_more(p_seq([p_not(fun 'line_break'/2), p_anything()])), fun 'line_break'/2, p_optional(fun 'comment'/2)]))(I,D) end, fun(Node, Idx) ->transform('comment', Node, Idx) end).
-
 -spec 'title'(input(), index()) -> parse_result().
 'title'(Input, Index) ->
   p(Input, Index, 'title', fun(I,D) -> (p_seq([p_string(<<"::">>), fun 'escaped_text'/2, p_string(<<"::">>), p_optional(p_one_or_more(fun 'line_break'/2))]))(I,D) end, fun(Node, Idx) ->transform('title', Node, Idx) end).
@@ -166,6 +162,10 @@ parse(Input) when is_binary(Input) ->
 'escaped_symbol'(Input, Index) ->
   p(Input, Index, 'escaped_symbol', fun(I,D) -> (p_seq([p_string(<<"\\">>), p_charclass(<<"[={}~#:]">>)]))(I,D) end, fun(Node, Idx) ->transform('escaped_symbol', Node, Idx) end).
 
+-spec 'comment'(input(), index()) -> parse_result().
+'comment'(Input, Index) ->
+  p(Input, Index, 'comment', fun(I,D) -> (p_seq([p_string(<<"\/\/">>), p_zero_or_more(p_seq([p_not(fun 'line_break'/2), p_anything()])), fun 'line_break'/2, p_optional(fun 'comment'/2)]))(I,D) end, fun(_Node, _Idx) ->comment end).
+
 -spec 'blank_line'(input(), index()) -> parse_result().
 'blank_line'(Input, Index) ->
   p(Input, Index, 'blank_line', fun(I,D) -> (p_seq([fun 'line_break'/2, p_optional(fun 'nbsp'/2), fun 'line_break'/2, p_optional(fun 'space'/2)]))(I,D) end, fun(_Node, _Idx) ->blank_line end).
@@ -176,7 +176,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'line_break'(input(), index()) -> parse_result().
 'line_break'(Input, Index) ->
-  p(Input, Index, 'line_break', fun(I,D) -> (p_choose([p_string(<<"\r\n">>), p_string(<<"\n">>)]))(I,D) end, fun(_Node, _Idx) ->line_break end).
+  p(Input, Index, 'line_break', fun(I,D) -> (p_choose([p_charclass(<<"[\n]">>), p_charclass(<<"[\r\n]">>)]))(I,D) end, fun(_Node, _Idx) ->line_break end).
 
 -spec 'space'(input(), index()) -> parse_result().
 'space'(Input, Index) ->
