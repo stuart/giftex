@@ -1,3 +1,3 @@
 defmodule Gift.Description do
-  defstruct text: ""
+  use Gift.Question
 end

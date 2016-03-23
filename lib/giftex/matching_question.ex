@@ -1,3 +1,3 @@
 defmodule Gift.MatchingQuestion do
-  defstruct text: "", answers: []
+  use Gift.Question
 end

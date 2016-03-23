@@ -1,3 +1,3 @@
 defmodule Gift.MultipleChoiceQuestion do
-  defstruct text: "", answers: []
+  use Gift.Question
 end

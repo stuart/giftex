@@ -1,3 +1,3 @@
 defmodule Gift.NumericQuestion do
-  defstruct text: "", answers: []
+  use Gift.Question
 end

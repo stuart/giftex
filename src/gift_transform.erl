@@ -26,22 +26,32 @@ trim_binary(Text) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ROOT NODE TRANSFORM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-transform(gift, Node, _Index) ->
-  case Node of
-    [[[],M,[]] | _ ] -> M
-  end;
 
-transform(question, Q, _Index) ->
+transform(gift, [_, Questions], _Index) when is_list(Questions) ->
+  Questions;
+
+transform(single_question, [CommandList, Q, _], _Index) ->
+  CommandList ++ [Q];
+
+transform(question_list, [QList, SingleQ], _Index) ->
+  lists:map(fun([CommandList, Q, _]) -> Q end, QList) ++ SingleQ;
+
+transform(decorated_question, [Comment, Title, Markup, Q, _], _Index) ->
+  % Comment is dropped.
+  maps:put(markup_language, Markup, maps:put(title, Title, Q));
+
+transform(question, [_, Q], _Index) ->
   Q;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Question types
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 transform(essay_question, [Q | _], _Index) ->
   #{'__struct__' => 'Elixir.Gift.EssayQuestion', text => Q};
 
 transform(true_false_question, [Q, _, _, A, _, _], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.TrueFalseQuestion', text => Q, answer => A};
+  #{'__struct__' => 'Elixir.Gift.TrueFalseQuestion', text => Q, answers => [A]};
 
 transform(matching_question, [Q, _, _, Alist, _, _], _Index) ->
     #{'__struct__' => 'Elixir.Gift.MatchingQuestion', text => Q, answers => Alist};
@@ -63,23 +73,30 @@ transform(description, Node, _Index) ->
   #{'__struct__' => 'Elixir.Gift.Description', text => Node};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+transform(command, [_, Text, _], _Index) ->
+  #{'__struct__' => 'Elixir.Gift.Command', command => join_text(Text, second)};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parts of Questions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 transform(question_text, Node, _Index) ->
-  Text = lists:map(fun([_,_,L]) -> L end, Node),
+  Text = lists:map(fun([_,L]) -> L end, Node),
   join_text(Text);
 
 transform(true_answer, [_,_,[]], _Index) ->
-  true;
+  {true, 100};
 
 transform(false_answer, [_,_,[]], _Index) ->
-  false;
+  {false, 100};
 
 transform(true_answer, [_,_,Feedback], _Index) ->
-  {true, Feedback};
+  {true, 100, Feedback};
 
 transform(false_answer, [_,_,Feedback], _Index) ->
-  {false, Feedback};
+  {false, 100, Feedback};
 
 transform(right_answer, [_, [], Answer, Feedback], _Index) ->
   transform(right_answer, [nil, 100, Answer, Feedback], _Index);
@@ -117,6 +134,12 @@ transform(match_answer, [_, V1, _, V2, _], _Index) ->
 transform(range, [Min, _, Max], _Index) ->
   {Min, Max};
 
+transform(title, [_, Title, _, _], _Index) ->
+  Title;
+
+transform(markup, [_, Markup, _], _Index) ->
+  list_to_atom(binary_to_list(Markup));
+
 transform(feedback, [_, Feedback], _Index) ->
   Feedback;
 
@@ -126,6 +149,9 @@ transform(weight, [_, Weight, _], _Index) ->
 transform(escaped_text, [Text, _], _Index) ->
   join_text(Text, second);
 
+transform(escaped_symbol, [_, Text], _Index) ->
+  Text;
+
 transform(number, Node, _Index) ->
   case Node of
     [Int, []] -> list_to_integer(binary_to_list(iolist_to_binary(Int)));
@@ -133,5 +159,5 @@ transform(number, Node, _Index) ->
     _ -> list_to_float(binary_to_list(iolist_to_binary(Node)))
   end;
 
-transform(Symbol, Node, _Index) when is_atom(Symbol) ->
+transform(Symbol, Node, Index) when is_atom(Symbol) ->
   Node.

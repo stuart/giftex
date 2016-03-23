@@ -1,3 +1,3 @@
 defmodule Gift.FillInQuestion do
-  defstruct text: "", answers: []
+  use Gift.Question
 end

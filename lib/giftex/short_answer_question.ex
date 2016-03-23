@@ -1,3 +1,3 @@
 defmodule Gift.ShortAnswerQuestion do
-  defstruct text: "", answers: []
+  use Gift.Question
 end
