@@ -23,6 +23,18 @@ do_join(L, Acc) ->
 trim_binary(Text) ->
   re:replace(Text, "^[\\s\\t\\r\\n]+|[\\s\\t\\r\\n]+$", "", [{return, binary}, global]).
 
+add_markup([], Q) ->
+  maps:put(markup_language, plain, Q);
+
+add_markup(Markup, Q) ->
+  maps:put(markup_language, Markup, Q).
+
+add_title([], Q) ->
+  maps:put(title, <<>>, Q);
+
+add_title(Title, Q) ->
+  maps:put(title, Title, Q).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ROOT NODE TRANSFORM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,8 +49,7 @@ transform(question_list, [QList, SingleQ], _Index) ->
   lists:map(fun([CommandList, Q, _]) -> Q end, QList) ++ SingleQ;
 
 transform(decorated_question, [Comment, Title, Markup, Q, _], _Index) ->
-  % Comment is dropped.
-  maps:put(markup_language, Markup, maps:put(title, Title, Q));
+  add_markup(Markup, add_title(Title, Q));
 
 transform(question, [_, Q], _Index) ->
   Q;

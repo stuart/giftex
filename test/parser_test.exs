@@ -152,32 +152,32 @@ defmodule Giftex.ParserTest do
 
   test "escape left bracket" do
     p = :gift.parse("Can a \\{ be escaped?{=Yes a \\{ can ~No}")
-    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a { can", 100}, {"No", 0}], text: "Can a { be escaped?", title: []}] = p
+    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a { can", 100}, {"No", 0}], text: "Can a { be escaped?", title: ""}] = p
   end
 
   test "escape right bracket" do
     p = :gift.parse("Can a \\} be escaped?{=Yes a \\} can ~No}")
-    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a } can", 100}, {"No", 0}], text: "Can a } be escaped?", title: []}] = p
+    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a } can", 100}, {"No", 0}], text: "Can a } be escaped?", title: ""}] = p
   end
 
   test "escape colon" do
     p = :gift.parse("Can a \\: be escaped?{=Yes a \\: can ~No}")
-    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a : can", 100}, {"No", 0}], text: "Can a : be escaped?", title: []}] = p
+    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a : can", 100}, {"No", 0}], text: "Can a : be escaped?", title: ""}] = p
   end
 
   test "escape hash" do
     p = :gift.parse("Can a \\# be escaped?{=Yes a \\# can ~No}")
-    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a # can", 100}, {"No", 0}], text: "Can a # be escaped?", title: []}] = p
+    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a # can", 100}, {"No", 0}], text: "Can a # be escaped?", title: ""}] = p
   end
 
   test "escape tilde" do
     p = :gift.parse("Can a \\~ be escaped?{=Yes a \\~ can ~No}")
-    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a ~ can", 100}, {"No", 0}], text: "Can a ~ be escaped?", title: []}] = p
+    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a ~ can", 100}, {"No", 0}], text: "Can a ~ be escaped?", title: ""}] = p
   end
 
   test "escape equals" do
     p = :gift.parse("Can a \\= be escaped?{=Yes a \\= can ~No}")
-    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a = can", 100}, {"No", 0}], text: "Can a = be escaped?", title: []}] = p
+    assert [%Gift.MultipleChoiceQuestion{answers: [{"Yes a = can", 100}, {"No", 0}], text: "Can a = be escaped?", title: ""}] = p
   end
 
   test "escapes in a comment" do
@@ -239,5 +239,10 @@ defmodule Giftex.ParserTest do
   test "markup type" do
     p = parse_first "[textile] This *essay* is marked up in textile.{}\n\n"
     assert %Gift.EssayQuestion{text: "This *essay* is marked up in textile.", markup_language: :textile} = p
+  end
+
+  test "markup and title defaults" do
+    p = parse_first "This essay is in plain text.{}\n\n"
+    assert %Gift.EssayQuestion{text: "This essay is in plain text.", markup_language: :plain, title: ""} = p
   end
 end
