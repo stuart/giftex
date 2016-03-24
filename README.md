@@ -73,7 +73,7 @@ This example shows how to add feedback to answers with the # symbol.
 
     {type: :multiple_choice_question, title: "Q2",
      text: "What's between orange and green in the spectrum?",
-     answers: [{"yellow", 100, "good!"}, {"red", 0, "wrong, it's yellow"},
+     answers: [{"yellow", 100, "right; good!"}, {"red", 0, "wrong, it's yellow"},
                {"blue", 0, "wrong, it's yellow"}]}
 
 ### Fill in The Blank Question
@@ -97,3 +97,54 @@ All answers must start with an =.
     ::Q4:: Which animal eats which food? { =cat -> cat food =dog -> dog food }
 
     {type: :matching_question, title: "Q4", answers: {{"cat", "cat food"},{"dog", "dog food"}}}
+
+### Numerical Range Question
+
+This is a question where the answer must be within a numerical range.
+There are two ways to specify a range. The parsed format just returns a tuple
+with a maximum and minimum value.
+
+    * #N:T where N is a value and T is a tolerance. The answer must be
+      within N +/- T.
+
+    * #M..N which is a range from M to N.
+
+    // math range question with value and tolerance
+    ::Q5:: What is a number from 1 to 5? {#3:2}
+
+    // math range specified with interval end points
+    ::Q6:: What is a number from 1 to 5? {#1..5}
+
+    %{answers: [{{1, 5}, 100}], markup_language: :plain,
+     text: "What is a number from 1 to 5?", title: "Q5", type: :numeric_question}
+
+### Essay Question
+  An essay question is denoted by not having any answers in the brackets.
+
+    ::Q8:: Write about how great Elixir is.{}
+
+    %{title: "Q8", type: :essay_question, text: "Write about how great Elixir is."}
+
+### Short Answer Question
+  A short answer question is denoted by only having correct answers
+  (i.e. ones starting with =) in the answer list
+
+    Who's buried in Grant's tomb?{=Grant =Ulysses S. Grant =Ulysses Grant}
+
+    %{type: :short_answer_question, text: Who's buried in Grant's tomb?,
+      answers: [{"Grant", 100}, {"Ulysses S. Grant", 100}, {"Ulysses Grant", 100}]}
+
+### Description
+  A description is just plain text with no brackets after it.
+
+    A description here
+
+    {type: :description, text: "A description here"}
+
+### Commands
+
+  A command is preceeded by a $.
+  Whilst commands will parse correctly, nothing is yet implemented to process them.
+
+    $CATEGORY=food
+    {type: :command, command: "CATEGORY=food"}
