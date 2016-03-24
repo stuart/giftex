@@ -3,16 +3,20 @@
 % ROOT NODE
 gift <- space? item_list space?;
 
-
 item_list <- (item)* (decorated_question (blank_line / space)*)?;
 
-item <- comment / (command space?) / (decorated_question blank_line);
+item <- comment / (command space?) / (decorated_question blank_line) / (description blank_line);
 
+% ITEM TYPES
 command <- "$" (!line_break .)+;
 
 decorated_question <- title? markup? question nbsp?;
 
-question <- essay_question / true_false_question / matching_question / fill_in_question / short_answer_question / multiple_choice_question / numeric_question / description;
+question <- essay_question / true_false_question / matching_question / fill_in_question / short_answer_question / multiple_choice_question / numeric_question;
+
+description <- (!line_break ![=~{}}#:] ( escaped_symbol / .))+;
+
+comment <- "//" (!line_break .)* line_break comment? `comment`;
 
 % QUESTION TYPES
 essay_question <- question_text '{' nbsp? '}';
@@ -28,8 +32,6 @@ short_answer_question <- question_text "{" space? (right_answer)+ space? "}";
 multiple_choice_question <- question_text "{" space? (right_answer / wrong_answer)+ space? "}";
 
 numeric_question <- question_text "{#" space? (numeric_answer)+ space? "}";
-
-description <- question_text;
 
 question_text <- (!"{" escaped_text)+;
 
@@ -70,11 +72,9 @@ non_zero_digit <- [1-9];
 
 digit <- [0-9];
 
-escaped_text <- (![=~{}}#:] ( escaped_symbol / .))+ space?;
+escaped_text <- (![=~{}#:] ( escaped_symbol / .))+ space?;
 
 escaped_symbol <- ("\\" [={}~#:]);
-
-comment <- "//" (!line_break .)* line_break comment? `comment`;
 
 % WHITESPACE
 

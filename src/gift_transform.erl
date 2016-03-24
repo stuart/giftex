@@ -74,40 +74,43 @@ transform(question, [_, Q], _Index) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 transform(essay_question, [Q | _], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.EssayQuestion', text => Q};
+  #{type => essay_question, text => Q};
 
 transform(true_false_question, [Q, _, _, A, _, _], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.TrueFalseQuestion', text => Q, answers => [A]};
+  #{type => true_false_question, text => Q, answers => [A]};
 
 transform(matching_question, [Q, _, _, Alist, _, _], _Index) ->
-    #{'__struct__' => 'Elixir.Gift.MatchingQuestion', text => Q, answers => Alist};
+  #{type => matching_question, text => Q, answers => Alist};
 
 transform(fill_in_question, [Prefix, _, _, Alist, _, _, Suffix], _Index) ->
   S = join_text(Suffix, second),
-  #{'__struct__' => 'Elixir.Gift.FillInQuestion', text => <<Prefix/binary, " _ ", S/binary>>, answers => Alist};
+  #{type => fill_in_question, text => <<Prefix/binary, " _ ", S/binary>>, answers => Alist};
 
 transform(short_answer_question, [Q, _, _, Alist, _, _], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.ShortAnswerQuestion', text => Q, answers => Alist};
+  #{type => short_answer_question, text => Q, answers => Alist};
 
 transform(multiple_choice_question, [Q, _, _, Alist, _, _], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.MultipleChoiceQuestion', text => Q, answers => Alist};
+  #{type => multiple_choice_question, text => Q, answers => Alist};
 
 transform(numeric_question, [Q, _, _, Alist, _, _], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.NumericQuestion', text => Q, answers => Alist};
+  #{type => numeric_question, text => Q, answers => Alist};
 
-transform(description, Node, _Index) ->
-  #{'__struct__' => 'Elixir.Gift.Description', text => Node};
+transform(description, Text, _Index) ->
+  #{type => description, text => join_text(Text, third)};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Commands
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 transform(command, [_, Text], _Index) ->
-  #{'__struct__' => 'Elixir.Gift.Command', command => join_text(Text, second)};
+  #{type => command, command => join_text(Text, second)};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parts of Questions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+transform(question, Node, _Index) ->
+  Node;
+
 transform(question_text, Node, _Index) ->
   Text = lists:map(fun([_,L]) -> L end, Node),
   join_text(Text);
@@ -151,7 +154,7 @@ transform(numeric_answer, [_, Weight, Answer, _, []], _Index) ->
 transform(numeric_answer, [_, Weight, Answer, _, Feedback], _Index) ->
   {Answer, Weight, Feedback};
 
-transform(numeric_with_tolerance, [Val, _, Tolerance], Index) ->
+transform(numeric_with_tolerance, [Val, _, Tolerance], _Index) ->
   {Val - Tolerance, Val + Tolerance};
 
 transform(match_answer, [_, V1, _, V2, _], _Index) ->
@@ -185,5 +188,21 @@ transform(number, Node, _Index) ->
     _ -> list_to_float(binary_to_list(iolist_to_binary(Node)))
   end;
 
+transform(int, Node, _Index) ->
+  Node;
+
+transform(frac, Node, _Index) ->
+  Node;
+
+transform(digit, Node, _Index) ->
+  Node;
+
+transform(non_zero_digit, Node, _Index) ->
+  Node;
+
 transform(Symbol, Node, Index) when is_atom(Symbol) ->
+  'Elixir.IO':puts("Unmatched entity:"),
+  'Elixir.IO':inspect(Index),
+  'Elixir.IO':inspect(Symbol),
+  'Elixir.IO':inspect(Node),
   Node.

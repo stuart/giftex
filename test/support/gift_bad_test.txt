@@ -1,0 +1,7 @@
+// true/false Note the escaped = sign.
+::Q1:: 1+1\=2 {T}
+
+// This question has an error in it here
+::Q2:: What's between orange and green in = the spectrum?{ =yellow ~red ~blue }
+
+::Q3:: Another question{}

@@ -36,7 +36,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'item'(input(), index()) -> parse_result().
 'item'(Input, Index) ->
-  p(Input, Index, 'item', fun(I,D) -> (p_choose([fun 'comment'/2, p_seq([fun 'command'/2, p_optional(fun 'space'/2)]), p_seq([fun 'decorated_question'/2, fun 'blank_line'/2])]))(I,D) end, fun(Node, Idx) ->transform('item', Node, Idx) end).
+  p(Input, Index, 'item', fun(I,D) -> (p_choose([fun 'comment'/2, p_seq([fun 'command'/2, p_optional(fun 'space'/2)]), p_seq([fun 'decorated_question'/2, fun 'blank_line'/2]), p_seq([fun 'description'/2, fun 'blank_line'/2])]))(I,D) end, fun(Node, Idx) ->transform('item', Node, Idx) end).
 
 -spec 'command'(input(), index()) -> parse_result().
 'command'(Input, Index) ->
@@ -48,7 +48,15 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'question'(input(), index()) -> parse_result().
 'question'(Input, Index) ->
-  p(Input, Index, 'question', fun(I,D) -> (p_choose([fun 'essay_question'/2, fun 'true_false_question'/2, fun 'matching_question'/2, fun 'fill_in_question'/2, fun 'short_answer_question'/2, fun 'multiple_choice_question'/2, fun 'numeric_question'/2, fun 'description'/2]))(I,D) end, fun(Node, Idx) ->transform('question', Node, Idx) end).
+  p(Input, Index, 'question', fun(I,D) -> (p_choose([fun 'essay_question'/2, fun 'true_false_question'/2, fun 'matching_question'/2, fun 'fill_in_question'/2, fun 'short_answer_question'/2, fun 'multiple_choice_question'/2, fun 'numeric_question'/2]))(I,D) end, fun(Node, Idx) ->transform('question', Node, Idx) end).
+
+-spec 'description'(input(), index()) -> parse_result().
+'description'(Input, Index) ->
+  p(Input, Index, 'description', fun(I,D) -> (p_one_or_more(p_seq([p_not(fun 'line_break'/2), p_not(p_charclass(<<"[=~{}}#:]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])))(I,D) end, fun(Node, Idx) ->transform('description', Node, Idx) end).
+
+-spec 'comment'(input(), index()) -> parse_result().
+'comment'(Input, Index) ->
+  p(Input, Index, 'comment', fun(I,D) -> (p_seq([p_string(<<"\/\/">>), p_zero_or_more(p_seq([p_not(fun 'line_break'/2), p_anything()])), fun 'line_break'/2, p_optional(fun 'comment'/2)]))(I,D) end, fun(_Node, _Idx) ->comment end).
 
 -spec 'essay_question'(input(), index()) -> parse_result().
 'essay_question'(Input, Index) ->
@@ -77,10 +85,6 @@ parse(Input) when is_binary(Input) ->
 -spec 'numeric_question'(input(), index()) -> parse_result().
 'numeric_question'(Input, Index) ->
   p(Input, Index, 'numeric_question', fun(I,D) -> (p_seq([fun 'question_text'/2, p_string(<<"{#">>), p_optional(fun 'space'/2), p_one_or_more(fun 'numeric_answer'/2), p_optional(fun 'space'/2), p_string(<<"}">>)]))(I,D) end, fun(Node, Idx) ->transform('numeric_question', Node, Idx) end).
-
--spec 'description'(input(), index()) -> parse_result().
-'description'(Input, Index) ->
-  p(Input, Index, 'description', fun(I,D) -> (fun 'question_text'/2)(I,D) end, fun(Node, Idx) ->transform('description', Node, Idx) end).
 
 -spec 'question_text'(input(), index()) -> parse_result().
 'question_text'(Input, Index) ->
@@ -156,15 +160,11 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'escaped_text'(input(), index()) -> parse_result().
 'escaped_text'(Input, Index) ->
-  p(Input, Index, 'escaped_text', fun(I,D) -> (p_seq([p_one_or_more(p_seq([p_not(p_charclass(<<"[=~{}}#:]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), p_optional(fun 'space'/2)]))(I,D) end, fun(Node, Idx) ->transform('escaped_text', Node, Idx) end).
+  p(Input, Index, 'escaped_text', fun(I,D) -> (p_seq([p_one_or_more(p_seq([p_not(p_charclass(<<"[=~{}#:]">>)), p_choose([fun 'escaped_symbol'/2, p_anything()])])), p_optional(fun 'space'/2)]))(I,D) end, fun(Node, Idx) ->transform('escaped_text', Node, Idx) end).
 
 -spec 'escaped_symbol'(input(), index()) -> parse_result().
 'escaped_symbol'(Input, Index) ->
   p(Input, Index, 'escaped_symbol', fun(I,D) -> (p_seq([p_string(<<"\\">>), p_charclass(<<"[={}~#:]">>)]))(I,D) end, fun(Node, Idx) ->transform('escaped_symbol', Node, Idx) end).
-
--spec 'comment'(input(), index()) -> parse_result().
-'comment'(Input, Index) ->
-  p(Input, Index, 'comment', fun(I,D) -> (p_seq([p_string(<<"\/\/">>), p_zero_or_more(p_seq([p_not(fun 'line_break'/2), p_anything()])), fun 'line_break'/2, p_optional(fun 'comment'/2)]))(I,D) end, fun(_Node, _Idx) ->comment end).
 
 -spec 'blank_line'(input(), index()) -> parse_result().
 'blank_line'(Input, Index) ->
