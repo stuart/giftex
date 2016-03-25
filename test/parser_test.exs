@@ -244,4 +244,9 @@ defmodule Giftex.ParserTest do
     p = parse_first "This essay is in plain text.{}\n\n"
     assert %{ type: :essay_question,  text: "This essay is in plain text.", markup_language: :plain, title: ""} = p
   end
+
+  test "UTF 8 support" do
+    p = parse_first "どこに行きますか？{=オーストラリア =Australia}"
+    assert %{ type: :short_answer_question, text: "どこに行きますか？", answers: [{"オーストラリア", 100},{"Australia", 100}]}
+  end
 end
