@@ -58,5 +58,21 @@ defmodule Giftex.QuestionTest do
     assert Question.check_answer(q, [{"foo", "baz"}, {"bar", "bar"}, {"frob", "buzz"}]) == 0
   end
 
+  test "Answering a numeric question correctly" do
+    q = %{type: :numeric_question, answers: [{{1,10},100}]}
+    assert Question.check_answer(q, 7) == 100
+  end
 
+  test "Answering a numeric question incorrectly" do
+    q = %{type: :numeric_question, answers: [{{1,10},100}]}
+    assert Question.check_answer(q, 11) == 0
+    assert Question.check_answer(q, 0) == 0
+    assert Question.check_answer(q, -2.34) == 0
+  end
+
+  test "Answering a numeric question with multiple choices correctly" do
+    q = %{type: :numeric_question, answers: [{{3.1415,3.1416},100}, {{3,4}, 50}]}
+    assert Question.check_answer(q, 3.14159) == 100
+    assert Question.check_answer(q, 3.2) == 50
+  end
 end

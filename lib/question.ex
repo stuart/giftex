@@ -3,6 +3,10 @@ defmodule Giftex.Question do
     do_check_matching(answers, given_answers)
   end
 
+  def check_answer(%{type: :numeric_question, answers: answers}, answer) do
+    do_check_numeric(answers, answer)
+  end
+
   def check_answer(%{answers: answers}, answer) do
     {_, score} = List.keyfind(answers, answer, 0, {nil, 0})
     score
@@ -22,5 +26,11 @@ defmodule Giftex.Question do
     else
       0
     end
+  end
+
+  defp do_check_numeric(answers, answer) do
+    {_, score} = Enum.find(answers, {nil,0},
+                  fn({{min, max},_}) -> answer >= min && answer <= max end)
+    score
   end
 end
