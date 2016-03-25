@@ -106,10 +106,10 @@ This is a question where the answer must be within a numerical range.
 There are two ways to specify a range. The parsed format just returns a tuple
 with a maximum and minimum value.
 
-* #N:T where N is a value and T is a tolerance. The answer must be
+  * #N:T where N is a value and T is a tolerance. The answer must be
       within N +/- T.
 
-* #M..N which is a range from M to N.
+  * #M..N which is a range from M to N.
 
     // math range question with value and tolerance
     ::Q5:: What is a number from 1 to 5? {#3:2}

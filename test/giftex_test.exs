@@ -25,7 +25,7 @@ defmodule GiftexTest do
     {:ok, data} = File.read("#{__DIR__}/support/gift_bad_test.txt")
     gift = Giftex.parse(data)
 
-    assert {[_], remaining, {{:line, 5}, {:column, 1}}} = gift
+    assert {[_], _remaining, {{:line, 5}, {:column, 1}}} = gift
   end
 
   test "importing a file" do

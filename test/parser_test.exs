@@ -1,12 +1,6 @@
 defmodule Giftex.ParserTest do
   use ExUnit.Case
 
-  setup_all do
-    :ok = Giftex.build_parser
-    IEx.Helpers.c("src/gift.erl")
-    :ok
-  end
-
   def parse_first(str) do
     [h | _] = :gift.parse(str)
     h
@@ -247,6 +241,6 @@ defmodule Giftex.ParserTest do
 
   test "UTF 8 support" do
     p = parse_first "どこに行きますか？{=オーストラリア =Australia}"
-    assert %{ type: :short_answer_question, text: "どこに行きますか？", answers: [{"オーストラリア", 100},{"Australia", 100}]}
+    assert %{ type: :short_answer_question, text: "どこに行きますか？", answers: [{"オーストラリア", 100},{"Australia", 100}]} = p
   end
 end
