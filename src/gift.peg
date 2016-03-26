@@ -36,9 +36,9 @@ numeric_question <- question_text "{#" space? (numeric_answer)+ space? "}";
 question_text <- (!"{" escaped_text)+;
 
 % ANSWER TYPES
-true_answer <- ("TRUE" / "T") space? feedback?;
+true_answer <- ("TRUE" / "T") space? feedback? feedback?;
 
-false_answer <- ("FALSE" / "F") space? feedback?;
+false_answer <- ("FALSE" / "F") space? feedback? feedback?;
 
 wrong_answer <- "~" weight? escaped_text feedback?;
 

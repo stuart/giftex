@@ -150,3 +150,14 @@ with a maximum and minimum value.
 
     $CATEGORY=food
     {type: :command, command: "CATEGORY=food"}
+
+### Feedback
+
+  Feedback can be provided with an answer by following the answer with a hash then
+  the feedback string. True false answers may have two feedback strings, the first
+  for the incorrect answer and the second for the correct answer.
+
+    42 is the Absolute Answer to everything.{TRUE#42 is the Ultimate Answer.#You gave the right answer.}
+
+    %{ type: :true_false_question,  text: "42 is the Absolute Answer to everything.",
+       answers: [{true, 100,"You gave the right answer."},{false, 0,"42 is the Ultimate Answer."}]}

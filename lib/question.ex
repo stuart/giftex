@@ -7,16 +7,41 @@ defmodule Giftex.Question do
     do_check_numeric(answers, answer)
   end
 
+  def check_answer(%{type: :essay}, _answer) do
+    0
+  end
+
+  def check_answer(%{answers: answers}, given_answers) when is_list(given_answers) do
+    do_check_multiple_answers(answers, given_answers, 0, [])
+  end
+
   def check_answer(%{answers: answers}, answer) do
-    {_, score} = List.keyfind(answers, answer, 0, {nil, 0})
-    score
+    case List.keyfind(answers, answer, 0, {nil, 0}) do
+      {_, score} -> score
+      {_, score, feedback} -> {score, feedback}
+    end
+  end
+
+  defp do_check_multiple_answers(_answers, [], total_score, []) do
+    total_score
+  end
+
+  defp do_check_multiple_answers(_answers, [], total_score, total_feedback) do
+    {total_score, total_feedback}
+  end
+
+  defp do_check_multiple_answers(answers, [answer | rest], total_score, total_feedback) do
+    case List.keyfind(answers, answer, 0, {nil, 0}) do
+      {_, score} ->  do_check_multiple_answers(answers, rest, total_score + score, total_feedback)
+      {_, score, feedback} -> do_check_multiple_answers(answers, rest, total_score + score, total_feedback ++ [feedback])
+    end
   end
 
   defp do_check_matching([], []) do
     100
   end
 
-  defp do_check_matching(answer, []) do
+  defp do_check_matching(_answer, []) do
     0
   end
 
@@ -30,7 +55,9 @@ defmodule Giftex.Question do
 
   defp do_check_numeric(answers, answer) do
     {_, score} = Enum.find(answers, {nil,0},
-                  fn({{min, max},_}) -> answer >= min && answer <= max end)
+                  fn {{min, max},_} -> answer >= min && answer <= max
+                     {val, _}       -> answer == val
+                  end)
     score
   end
 end

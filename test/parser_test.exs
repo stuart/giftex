@@ -27,6 +27,12 @@ defmodule Giftex.ParserTest do
                                    answers: [{false, 100, "No one is buried in Grant's tomb."}]} = p
   end
 
+  test "feedback on both true and false answers" do
+    p = parse_first("42 is the Absolute Answer to everything.{TRUE#42 is the Ultimate Answer.#You gave the right answer.}")
+    assert %{ type: :true_false_question,  text: "42 is the Absolute Answer to everything.",
+              answers: [{true, 100,"You gave the right answer."},{false, 0,"42 is the Ultimate Answer."}]} = p
+  end
+
   test "multiple choice question" do
     p = parse_first("What color is the sky?{ =Blue ~Green ~Red}")
     assert %{type: :multiple_choice_question,  text: "What color is the sky?",
@@ -56,6 +62,12 @@ defmodule Giftex.ParserTest do
                                                   {"Yellow", 33},
                                                   {"Beige", 0},
                                                   {"Red", 33.3}]} = p
+  end
+
+  test "simple numeric question" do
+    p = parse_first "How many pounds in a kilogram?{#2.2}"
+
+    assert %{type: :numeric_question,  answers: [{2.2, 100}], text: "How many pounds in a kilogram?"} = p
   end
 
   test "numeric question with tolerance" do

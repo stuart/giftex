@@ -77,7 +77,7 @@ transform(essay_question, [Q | _], _Index) ->
   #{type => essay_question, text => Q};
 
 transform(true_false_question, [Q, _, _, A, _, _], _Index) ->
-  #{type => true_false_question, text => Q, answers => [A]};
+  #{type => true_false_question, text => Q, answers => A};
 
 transform(matching_question, [Q, _, _, Alist, _, _], _Index) ->
   #{type => matching_question, text => Q, answers => Alist};
@@ -115,17 +115,23 @@ transform(question_text, Node, _Index) ->
   Text = lists:map(fun([_,L]) -> L end, Node),
   join_text(Text);
 
-transform(true_answer, [_,_,[]], _Index) ->
-  {true, 100};
+transform(true_answer, [_,_,[],[]], _Index) ->
+  [{true, 100}];
 
-transform(false_answer, [_,_,[]], _Index) ->
-  {false, 100};
+transform(false_answer, [_,_,[],[]], _Index) ->
+  [{false, 100}];
 
-transform(true_answer, [_,_,Feedback], _Index) ->
-  {true, 100, Feedback};
+transform(true_answer, [_,_,Feedback, []], _Index) ->
+  [{true, 100, Feedback}];
 
-transform(false_answer, [_,_,Feedback], _Index) ->
-  {false, 100, Feedback};
+transform(false_answer, [_,_,Feedback, []], _Index) ->
+  [{false, 100, Feedback}];
+
+transform(true_answer, [_,_, WrongFeedback, RightFeedback], _Index) ->
+  [{true, 100, RightFeedback},{false, 0, WrongFeedback}];
+
+transform(false_answer, [_,_, WrongFeedback, RightFeedback], _Index) ->
+  [{false, 100, RightFeedback},{true, 0, WrongFeedback}];
 
 transform(right_answer, [_, [], Answer, Feedback], _Index) ->
   transform(right_answer, [nil, 100, Answer, Feedback], _Index);

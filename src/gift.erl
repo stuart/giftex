@@ -92,11 +92,11 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'true_answer'(input(), index()) -> parse_result().
 'true_answer'(Input, Index) ->
-  p(Input, Index, 'true_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"TRUE">>), p_string(<<"T">>)]), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('true_answer', Node, Idx) end).
+  p(Input, Index, 'true_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"TRUE">>), p_string(<<"T">>)]), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('true_answer', Node, Idx) end).
 
 -spec 'false_answer'(input(), index()) -> parse_result().
 'false_answer'(Input, Index) ->
-  p(Input, Index, 'false_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"FALSE">>), p_string(<<"F">>)]), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('false_answer', Node, Idx) end).
+  p(Input, Index, 'false_answer', fun(I,D) -> (p_seq([p_choose([p_string(<<"FALSE">>), p_string(<<"F">>)]), p_optional(fun 'space'/2), p_optional(fun 'feedback'/2), p_optional(fun 'feedback'/2)]))(I,D) end, fun(Node, Idx) ->transform('false_answer', Node, Idx) end).
 
 -spec 'wrong_answer'(input(), index()) -> parse_result().
 'wrong_answer'(Input, Index) ->
