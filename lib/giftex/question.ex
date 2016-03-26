@@ -7,6 +7,15 @@ defmodule Giftex.Question do
     do_check_numeric(answers, answer)
   end
 
+  def check_answer(%{type: :short_answer_question, answers: answers}, answer) do
+    downcase_answers = Enum.map answers,
+              fn
+                {a,score} -> {String.downcase(a), score}
+                {a, score, feedback} -> {String.downcase(a), score, feedback}
+              end
+    check_answer(%{answers: downcase_answers}, String.downcase(answer))
+  end
+
   def check_answer(%{type: :essay}, _answer) do
     0
   end

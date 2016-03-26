@@ -96,6 +96,16 @@ defmodule Giftex.QuestionTest do
     assert Question.check_answer(q, "Genesis") == 0
   end
 
+  test "Short answer questions are case insensitive" do
+    q = %{type: :short_answer_question, answers: [{"Pink Floyd",100}]}
+    assert Question.check_answer(q, "pink floyd") == 100
+  end
+
+  test "Short answer questions are case insensitive both ways" do
+    q = %{type: :short_answer_question, answers: [{"pink floyd",100}]}
+    assert Question.check_answer(q, "Pink Floyd") == 100
+  end
+
   test "Answering a multiple choice question that has feedback" do
     q = %{type: :multiple_choice_question, answers: [{"A", 100, "Correct"}, {"B", 0, "Wrong"}]}
     assert Question.check_answer(q, "A") == {100,"Correct"}
