@@ -32,7 +32,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'item_list'(input(), index()) -> parse_result().
 'item_list'(Input, Index) ->
-  p(Input, Index, 'item_list', fun(I,D) -> (p_seq([p_zero_or_more(fun 'item'/2), p_optional(p_seq([fun 'decorated_question'/2, p_zero_or_more(p_choose([fun 'blank_line'/2, fun 'space'/2]))]))]))(I,D) end, fun(Node, Idx) ->transform('item_list', Node, Idx) end).
+  p(Input, Index, 'item_list', fun(I,D) -> (p_seq([p_zero_or_more(fun 'item'/2), p_optional(p_choose([p_seq([fun 'decorated_question'/2, p_zero_or_more(p_choose([fun 'blank_line'/2, fun 'space'/2]))]), p_seq([fun 'description'/2, p_zero_or_more(p_choose([fun 'blank_line'/2, fun 'space'/2]))])]))]))(I,D) end, fun(Node, Idx) ->transform('item_list', Node, Idx) end).
 
 -spec 'item'(input(), index()) -> parse_result().
 'item'(Input, Index) ->

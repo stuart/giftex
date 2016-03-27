@@ -13,11 +13,11 @@ defmodule Giftex.Commands do
     qlist
   end
 
-  defp categorize cmd = %{command: <<"CATEGORY=">>}, _ do
+  defp categorize %{command: <<"CATEGORY=">>}, _ do
     {nil, []}
   end
 
-  defp categorize cmd = %{command: <<"CATEGORY=", category::binary>>}, _ do
+  defp categorize %{command: <<"CATEGORY=", category::binary>>}, _ do
     {nil, String.split(category, "/")}
   end
 

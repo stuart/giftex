@@ -3,7 +3,7 @@
 % ROOT NODE
 gift <- space? item_list space?;
 
-item_list <- (item)* (decorated_question (blank_line / space)*)?;
+item_list <- (item)* ((decorated_question (blank_line / space)*) / (description (blank_line / space)*))?;
 
 item <- comment / (command space?) / (decorated_question blank_line) / (description blank_line);
 

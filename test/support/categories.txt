@@ -17,3 +17,5 @@ $CATEGORY=numbers/universal
 
 $CATEGORY=
 This question has no category.{F}
+
+Why can't we have a description here?
