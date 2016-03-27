@@ -1,4 +1,16 @@
 defmodule Giftex.Question do
+
+  @doc """
+    Checks an answer and returns the result.
+
+    Arguments:
+      * Question
+      * Answer or list of answers
+
+    Returns:
+      Either score or {score, feedback}
+
+  """
   def check_answer(%{type: :matching_question, answers: answers}, given_answers) do
     do_check_matching(answers, given_answers)
   end

@@ -15,7 +15,6 @@ defmodule GiftexTest do
             %{type: :numeric_question},
             %{type: :numeric_question},
             %{type: :essay_question},
-            %{type: :command},
             %{type: :short_answer_question},
             %{type: :multiple_choice_question}
             ] = gift

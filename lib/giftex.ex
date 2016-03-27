@@ -25,7 +25,9 @@ defmodule Giftex do
 
   """
   def parse(text) do
-    :gift.parse(text)
+    text
+    |> :gift.parse
+    |> Giftex.Commands.process_commands
   end
 
   defp handle_parse(questions) when is_list(questions) do
