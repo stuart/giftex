@@ -207,8 +207,5 @@ transform(non_zero_digit, Node, _Index) ->
   Node;
 
 transform(Symbol, Node, Index) when is_atom(Symbol) ->
-  'Elixir.IO':puts("Unmatched entity:"),
-  'Elixir.IO':inspect(Index),
-  'Elixir.IO':inspect(Symbol),
-  'Elixir.IO':inspect(Node),
+  io:format("Unmatched entity: ~p, ~p, ~p ~n", [Symbol, Node, Index]),
   Node.
