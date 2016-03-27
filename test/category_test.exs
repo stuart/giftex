@@ -4,8 +4,6 @@ defmodule Giftex.CategoryTest do
 
   setup_all do
     {:ok, data} = File.read("#{__DIR__}/support/categories.txt")
-    gift = Giftex.parse(data)
-    IO.inspect gift
     {:ok, gift: Giftex.parse(data)}
   end
 
@@ -19,13 +17,18 @@ defmodule Giftex.CategoryTest do
 
   test "Question with another category", ctx do
     assert %{category: ["colors"]} = Enum.at ctx.gift, 2
+    assert %{category: ["colors"]} = Enum.at ctx.gift, 3
   end
 
   test "Question with a sub category", ctx do
-    assert %{category: ["numbers", "small"]} = Enum.at ctx.gift, 3
+    assert %{category: ["numbers", "small"]} = Enum.at ctx.gift, 4
   end
 
   test "Question with another sub category", ctx do
-    assert %{category: ["numbers", "universal"]} = Enum.at ctx.gift, 4
+    assert %{category: ["numbers", "universal"]} = Enum.at ctx.gift, 5
+  end
+
+  test "Question with no category again", ctx do
+    assert %{category: []} = Enum.at ctx.gift, 6
   end
 end

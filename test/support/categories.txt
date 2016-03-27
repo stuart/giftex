@@ -7,8 +7,13 @@ Which animal eats which food? { =cat -> cat food =dog -> dog food }
 $CATEGORY=colors
 What's between orange and green in the spectrum?{ =yellow ~red ~blue }
 
+Is this another color question?{T}
+
 $CATEGORY=numbers/small
 What is a number from 1 to 5? {#1..5}
 
 $CATEGORY=numbers/universal
 42 is the Absolute Answer to everything.{TRUE}
+
+$CATEGORY=
+This question has no category.{F}
