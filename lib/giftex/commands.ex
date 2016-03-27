@@ -2,6 +2,7 @@ defmodule Giftex.Commands do
   def process_commands item_list do
     item_list
     |> categorize_question_list
+    |> remove_unhandled_commands
   end
 
   defp categorize_question_list(qlist) when is_list(qlist) do
@@ -23,5 +24,18 @@ defmodule Giftex.Commands do
 
   defp categorize question, current_category do
     {Map.put(question, :category, current_category), current_category}
+  end
+
+  defp remove_unhandled_commands(qlist) when is_list(qlist) do
+    Enum.filter qlist, fn(item) ->
+      case item do
+        %{command: command} -> false
+        _ -> true
+      end
+    end
+  end
+
+  defp remove_unhandled_commands(qlist) do
+    qlist
   end
 end

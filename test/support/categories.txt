@@ -12,6 +12,8 @@ Is this another color question?{T}
 $CATEGORY=numbers/small
 What is a number from 1 to 5? {#1..5}
 
+$UNSUPPORTED_COMMAND
+
 $CATEGORY=numbers/universal
 42 is the Absolute Answer to everything.{TRUE}
 
