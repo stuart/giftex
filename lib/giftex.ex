@@ -1,13 +1,18 @@
 defmodule Giftex do
+  use Application
+
+  def start _type, _args do
+    Giftex.Supervisor.start_link()
+  end
 
   @doc """
-    Import a GIFT formatted file.
+    Parse a GIFT formatted file.
 
     Returns {:ok, list_of_questions}
     or      {:error, reason}
 
   """
-  def import_file(file) do
+  def parse_file(file) do
     case File.read(file) do
       {:ok, data} ->
           data
@@ -37,5 +42,9 @@ defmodule Giftex do
   defp handle_parse({_parsed, remaining,{{:line, line},{:column, column}}}) do
     [badline | _] = String.split(remaining, "\n")
     {:error, "Syntax error at line #{line}, column #{column} near:\n#{badline}"}
+  end
+
+  def add_question question do
+
   end
 end
